@@ -16,9 +16,7 @@ tools = [
 
 requires = [
 ]
-build_requires = [
-    "cmake"
-]
+build_requires = []
 uuid = "repository.rezFunk"
 
 def commands():
