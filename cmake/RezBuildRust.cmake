@@ -26,18 +26,21 @@ ENDFUNCTION()
 # build_rust Function
 #
 # calling example
-# build_rust(EXECUTABLES rusttest rusttest2 MODE release)
-FUNCTION( build_rust )
-    set(exes EXECS)
-    set(mode MODE)
-    set(options OPTIONAL) # seems like we have to supply this to the following command
-    cmake_parse_arguments(build_rust "${options}" "${mode}" "${exes}"  ${ARGN} )
-    #build_rust_EXECS
-    #build_rust_MODE
-    message("EXECS " ${build_rust_EXECS})
+# build_rust(EXECUTABLES rusttest rusttest2)
+FUNCTION( build_rust)
+    set(EXECS ${ARGN})
+    #EXECS
+    if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+        set(MODE "release")
+    else(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+        set(MODE "debug")
+    endif()
+
+    message("CMAKE_BUILD_TYPE " ${CMAKE_BUILD_TYPE})
+    message("EXECS " ${EXECS})
     # here is the full path to the executable
-    set(source_file_path target/${build_rust_MODE})
-    update_path( ${source_file_path} build_rust_EXECS)
+    set(source_file_path target/${MODE})
+    update_path( ${source_file_path} EXECS)
 
     # set path to sentinel used to determine if build has run
     SET(sentinel ${PROJECT_SOURCE_DIR}/target/.rust_build_sentinel)
@@ -54,7 +57,7 @@ FUNCTION( build_rust )
 
     # tell cmake that our custom command is responsible for outputing the sentinel file.
     # thus we establish a dependency between custom_Cargo_build_target and this custom command.
-    if(${mode} STREQUAL "release")
+    if(${MODE} STREQUAL "release")
         add_custom_command(
             OUTPUT
                 ${sentinel}  # fake! ensure we run!
@@ -66,7 +69,7 @@ FUNCTION( build_rust )
                 ${PROJECT_SOURCE_DIR}
             COMMENT "RUNNING cargo build --release"
         )
-    else(${mode} STREQUAL "release")
+    else(${MODE} STREQUAL "release")
         add_custom_command(
             OUTPUT
                 ${sentinel}  # fake! ensure we run!
@@ -81,7 +84,7 @@ FUNCTION( build_rust )
     endif()
 
     rez_install_files(
-        ${build_rust_EXECS}
+        ${EXECS}
         RELATIVE ${source_file_path}
         DESTINATION ./bin
         EXECUTABLE
